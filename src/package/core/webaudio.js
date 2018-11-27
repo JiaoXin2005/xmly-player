@@ -1,6 +1,5 @@
 import Observer from './observer'
-
-let src = 'http://audio.xmcdn.com/group50/M01/E6/36/wKgKmVv2jbuTR7VwADDPMy5_Qf4701.m4a'
+import {PlayState} from '../constants'
 
 let defaultOptions = {
   plugins: []
@@ -9,14 +8,20 @@ let defaultOptions = {
 class WebAudio extends Observer {
   constructor(options) {
     super()
+    let audio = new Audio()
+    audio.loop = false
+    audio.preload = 'none'
+    audio.autoplay = false
+    audio.crossOrigin = 'anonymous'
+
     this._options = Object.assign({}, defaultOptions, options)
-    console.log(options, '123')
+    // console.log(options, '123')
     this._plugins = {}
 
-    this.audio = new Audio()
+    this.audio = audio
+    this._playSrc = null
+    this.playState = PlayState.STOPPED
 
-    this.audio.src = src
-    this.audio.crossOrigin = 'anonymous'
 
     // this.audioContext = new AudioContext()
     // this.source = this.audioContext.createMediaElementSource(this.audio)
@@ -35,20 +40,32 @@ class WebAudio extends Observer {
     })
   }
 
+  setSrc(src) {
+    try {
+      this._playSrc = src
+      this.audio.src = this._playSrc
+      return this
+    } catch (error) {
+      console.log('webaudio setSrc error :', error)
+    }
+  }
+
   disconnect() {
     this.gainNode.disconnect(0)
   }
 
   play() {
-    // const buffer = await getBuffer(src)
-    // buffer && playAudio(buffer)
-    this.applyPluginsAsyncSeries('play', () => {console.log(231231)})
-    // this.audio.play()
-
-    console.log(this, 'fireEvent')
+    this.audio.play()
+    // console.log(this, 'fireEvent')
   }
 
-  setSource() {}
+  pause() {
+    this.audio.pause()
+  }
+
+  resume() {
+    this.audio.play()
+  }
 
   setVolume(v) {
     // this.gainNode.gain.value = v

@@ -1,28 +1,40 @@
-import React, { Component } from 'react';
-import './App.css';
-import Player from './package/core/webaudio'
+import React, { Component } from 'react'
+import './App.css'
 
+import Player from './package/controllers/Player'
+
+// import Player from './package/core/webaudio'
 import Baidu from './package/plugins/baidu'
 import Link from './package/plugins/link'
 
-class App extends Component {
+let src = 'http://audio.xmcdn.com/group50/M01/E6/36/wKgKmVv2jbuTR7VwADDPMy5_Qf4701.m4a'
 
-  componentDidMount() {
-    this.player = new Player({
-      plugins: [new Baidu(), new Link()]
-    })
+class Button extends Component {
+
+  handlePlay = () => {
+    this.props.setSrc(src)
+    this.props.play()
   }
 
   render() {
+    console.log('Button props: ', this.props)
+    return <button onClick={this.handlePlay}>播放</button>
+  }
+}
+
+class App extends Component {
+  componentDidMount() {
+    // this.player = new Player({
+    //   plugins: [new Baidu(), new Link()]
+    // })
+  }
+
+
+  render() {
     return <div className="App">
-        <button onClick={() => {
-            this.player.play()
-          }}>
-          播放
-        </button>
-        <button onClick={() => this.player.setVolume(0.2)}>0.2</button>
+      <Player Component={Button} />
       </div>
   }
 }
 
-export default App;
+export default App
