@@ -32,6 +32,10 @@ export default class Observer {
     }
   }
 
+  unAll() {
+    this._handlers = {}
+  }
+
   once(name, fn) {
     const handler = (...args) => {
       fn.apply(this, args)
