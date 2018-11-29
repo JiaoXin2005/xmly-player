@@ -3,7 +3,8 @@ import { PlayState } from '../constants'
 
 let defaultOptions = {
   plugins: [],
-  playbackRate: 1
+  playbackRate: 1,
+  volume: 1
 }
 
 class WebAudio extends Observer {
@@ -25,6 +26,7 @@ class WebAudio extends Observer {
     this._playInfo = [] // 当前播放状态轨迹
 
     this._playbackRate = this._options.playbackRate
+    this._volume = this._options.volume
 
     // this.audioContext = new AudioContext()
     // this.source = this.audioContext.createMediaElementSource(this.audio)
@@ -46,7 +48,7 @@ class WebAudio extends Observer {
 
     audio.addEventListener('error', (e) => {
       let src = this.audio.src
-      this.emit('audio.loadError', [src, this, e])
+      this.emit('audio@loadError', [src, this, e])
       this.setPlayState(PlayState.ERROR)
     })
 
@@ -67,23 +69,23 @@ class WebAudio extends Observer {
       let currentTime = audio.currentTime
       if (this._playState === PlayState.PLAYING) {
         let persent = currentTime / audio.duration
-        this.emit('audio.timeUpdate', [currentTime, persent])
+        this.emit('audio@timeUpdate', [currentTime, persent])
       }
     })
 
     /* called when audio is downloading */
     audio.addEventListener('progress', () => {
-      const percentage = audio.buffered.length ? audio.buffered.end(audio.buffered.length -1 ) / this.duration : 0
-      this.emit('audio.progress', [percentage])
+      const percentage = audio.buffered.length ? audio.buffered.end(audio.buffered.length - 1) / this.getDuration() : 0
+      this.emit('audio@progress', [percentage])
     })
 
 
     audio.addEventListener('durationchange', () => {
-      if (this.duration !== 1) {
-        this.emit('audio.durationChange', [this.duration])
+      let duration = this.getDuration()
+      if (duration !== 1) {
+        this.emit('audio@durationChange', [duration])
       }
     })
-
 
   }
 
@@ -94,12 +96,31 @@ class WebAudio extends Observer {
   }
 
   ininAudioSetting() {
-    let { playbackRate } = this._options
+    let { playbackRate, volume } = this._options
     this.setPlaybackRate(playbackRate)
+    this.setVolume(volume)
   }
 
-  get duration() {
+  getDuration() {
     return isNaN(this.audio.duration) ? 0 : this.audio.duration
+  }
+
+  getVolume() {
+    return this.audio.volume
+  }
+
+
+  play() {
+    if (!this._playSrc) {
+      throw new Error('audio url is not exit!')
+    }
+    this.audio.play()
+    this.setPlayState(PlayState.PLAYING)
+  }
+
+  pause() {
+    this.audio.pause()
+    this.setPlayState(PlayState.PAUSED)
   }
 
   setSrc(src) {
@@ -112,24 +133,6 @@ class WebAudio extends Observer {
     }
   }
 
-  disconnect() {
-    this.gainNode.disconnect(0)
-  }
-
-  play() {
-    if (!this._playSrc) {
-      throw new Error('audio url is not exit!')
-    }
-
-    this.audio.play()
-    this.setPlayState(PlayState.PLAYING)
-  }
-
-  pause() {
-    this.audio.pause()
-    this.setPlayState(PlayState.PAUSED)
-  }
-
   setPlayState(state) {
     if (this._playState !== state) {
       this._playState = state
@@ -140,7 +143,7 @@ class WebAudio extends Observer {
         s: this._playSrc
       }
       this._playInfo.push(info)
-      this.emit('audio.playStateChange', [this._playState, this._playInfo])
+      this.emit('audio@playStateChange', [this._playState, this._playInfo])
       if (!this._playState || this._playState === PlayState.ERROR) {
         this._playInfo = []
       }
@@ -154,29 +157,26 @@ class WebAudio extends Observer {
     }
     this._playbackRate = rate
     this.audio.playbackRate = rate
-    this.emit('audio.changePlaybackRate')
+    this.emit('audio@playbackRateChange')
   }
 
-  // setVolume(v) {
-  //   // this.gainNode.gain.value = v
-  //   this.disconnect()
-  //   let [panner, gain1, gain2, convolver] = [
-  //     this.audioContext.createPanner(),
-  //     this.audioContext.createGain(),
-  //     this.audioContext.createGain(),
-  //     this.audioContext.createConvolver()
-  //   ]
-  //   panner.setOrientation(0, 0, 0, 0, 1, 0)
-  //   let [index, radius] = [0, 20]
-  //   let effectTimer = setInterval(() => {
-  //     panner.setPosition(Math.sin(index) * radius, 0, Math.cos(index) * radius)
-  //     index += 1 / 100
-  //   }, 16)
-  //   this.source.connect(panner)
-  //   gain1.gain.value = 5
-  //   panner.connect(gain1)
-  //   gain1.connect(this.audioContext.destination)
-  // }
+  setVolume(volume) {
+    // volume 0 - 1
+    volume = parseFloat(volume)
+    volume = volume >= 1 ? 1 : volume
+    volume = volume <= 0 ? 0 : volume
+    this._volume = volume
+    this.audio.volume = volume
+    this.emit('audio@volumeChange')
+  }
+
+  seek(time) {
+      time = Math.max(time, 0)
+      time = Math.min(time, this.getDuration())
+      this.audio.currentTime = time
+      this.emit('audio@seekedTime')
+  }
+
 }
 
 export default WebAudio

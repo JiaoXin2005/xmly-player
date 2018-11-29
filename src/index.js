@@ -5,10 +5,19 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import PlayerProvider from './package/controllers/PlayerProvider'
 
+import WebContext from './package/plugins/webContext'
+import { asn1 } from 'node-forge';
+
+let ability = {
+  plugins: [new WebContext()]
+}
+
 ReactDOM.render(
-  <PlayerProvider>
+  <PlayerProvider ability={ability}>
     <App />
-  </PlayerProvider>, document.getElementById('root'));
+  </PlayerProvider>,
+  document.getElementById('root')
+)
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
