@@ -10,6 +10,7 @@ export default class Observer {
   }
 
   on(name, fn) {
+    if (typeof fn !== 'function') return
     if (!this._handlers[name]) {
       this._handlers[name] = [fn]
     } else {

@@ -4,8 +4,11 @@ export default class WebContext {
   }
 
   apply({ webAudio }) {
-    webAudio._AC = new AudioContext()
-    // console.log(webAudio)
+
+    webAudio.enhance('_AC', () => {
+      let _AC = new WebContext()
+      return _AC
+    })
   }
 
 }

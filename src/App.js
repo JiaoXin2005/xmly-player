@@ -8,8 +8,8 @@ let src = 'http://audio.xmcdn.com/group50/M01/E6/36/wKgKmVv2jbuTR7VwADDPMy5_Qf47
 class Button extends Component {
 
   handlePlay = () => {
-    this.props.setSrc(src)
-    this.props.play()
+    this.props.$_setSrc(src)
+    this.props.$_play()
   }
 
   render() {

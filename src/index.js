@@ -6,7 +6,6 @@ import * as serviceWorker from './serviceWorker';
 import PlayerProvider from './package/controllers/PlayerProvider'
 
 import WebContext from './package/plugins/webContext'
-import { asn1 } from 'node-forge';
 
 let ability = {
   plugins: [new WebContext()]

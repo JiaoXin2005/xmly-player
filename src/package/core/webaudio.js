@@ -101,6 +101,16 @@ class WebAudio extends Observer {
     this.setVolume(volume)
   }
 
+  enhance(props, fn) {
+    if (this[props]) {
+      throw new Error(`props: "${props}" is already exist in webAudio, you can not overrider it!`)
+    }
+    let val = fn()
+    if (val !== undefined) {
+      this[props] = val
+    }
+  }
+
   getDuration() {
     return isNaN(this.audio.duration) ? 0 : this.audio.duration
   }
@@ -125,6 +135,7 @@ class WebAudio extends Observer {
 
   setSrc(src) {
     try {
+      this.emit('audio@setSrc')
       this._playSrc = src
       this.audio.src = this._playSrc
       return this
@@ -157,6 +168,7 @@ class WebAudio extends Observer {
     }
     this._playbackRate = rate
     this.audio.playbackRate = rate
+    this.audio.defaultPlaybackRate = rate
     this.emit('audio@playbackRateChange')
   }
 
@@ -171,10 +183,15 @@ class WebAudio extends Observer {
   }
 
   seek(time) {
+    if (isNaN(time)) throw new Error(`seek time: "${time}" must be number!`) 
+    try {
       time = Math.max(time, 0)
       time = Math.min(time, this.getDuration())
       this.audio.currentTime = time
       this.emit('audio@seekedTime')
+    } catch (error) {
+      console.error(error)
+    }
   }
 
 }
